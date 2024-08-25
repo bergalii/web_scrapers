@@ -17,15 +17,15 @@ LOGIN_URL = login_url = (
     "https://www.amazon.de/-/en/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2F%3Fref_%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0"
 )
 
-MAIN_PAGE_URL = "https://www.reddit.com/r/laundry/?rdt=47403"
+MAIN_PAGE_URL = "https://www.amazon.de/"
 
 
 class AmazonCrawler:
     def __init__(self):
         self.driver = uc.Chrome(use_subprocess=True, options=CHROME_OPTIONS)
         # login credentials
-        self.email = "FILL"
-        self.password = "FILL"
+        self.email = ""
+        self.password = ""
         self.timeout = 20  # in seconds
         self.wait = WebDriverWait(self.driver, self.timeout)
         self.loop = True
