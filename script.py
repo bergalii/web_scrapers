@@ -26,7 +26,8 @@ logger.addHandler(log_handler)
 CHROME_OPTIONS = uc.ChromeOptions()
 CHROME_OPTIONS.headless = False
 CHROME_OPTIONS.add_argument("--disable-search-engine-choice-screen")
-MAIN_PAGE_URL = "https://www.reddit.com/r/laundry/"
+subreddit = None
+MAIN_PAGE_URL = "https://www.reddit.com/r/{subreddit}/"
 
 
 class RedditCrawler:
