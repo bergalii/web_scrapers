@@ -12,6 +12,7 @@ import re
 import logging
 from logging.handlers import RotatingFileHandler
 import traceback
+from datetime import datetime
 
 # Configure logging
 log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -26,8 +27,8 @@ logger.addHandler(log_handler)
 CHROME_OPTIONS = uc.ChromeOptions()
 CHROME_OPTIONS.headless = False
 CHROME_OPTIONS.add_argument("--disable-search-engine-choice-screen")
-subreddit = None
-MAIN_PAGE_URL = "https://www.reddit.com/r/{subreddit}/"
+MAIN_PAGE_URL = "https://www.reddit.com/r/laundry/"
+CUTOFF_DATE = "19.11.2024"  # D-M-Y
 
 
 class RedditCrawler:
@@ -41,6 +42,9 @@ class RedditCrawler:
         self.session = requests.Session()
         self.mount_retry_adapter()
         self.processed_images = set()
+        self.cutoff_date = datetime.strptime(
+            CUTOFF_DATE, r"%d.%m.%Y"
+        )  # Define the cutoff date
 
     def mount_retry_adapter(self):
         retries = Retry(
@@ -95,6 +99,7 @@ class RedditCrawler:
 
     def process_visible_images(self):
         try:
+
             zoomable_img_elements = self.wait.until(
                 EC.presence_of_all_elements_located((By.TAG_NAME, "zoomable-img"))
             )
@@ -102,6 +107,21 @@ class RedditCrawler:
                 f"{len(zoomable_img_elements)} images found in the current page, starting the download process."
             )
             for zoomable_img_element in zoomable_img_elements:
+                try:
+                    post_timestamp = zoomable_img_element.find_element(
+                        By.XPATH, "./ancestor::shreddit-post"
+                    ).get_attribute("created-timestamp")
+                    # Convert the timestamp to datetime format
+                    post_date = datetime.fromisoformat(post_timestamp.split("+")[0])
+                    # Check if the post date is older than the cutoff date
+                    if post_date < self.cutoff_date:
+                        logger.info(
+                            f"Post date {post_date} is older than the cutoff date {self.cutoff_date}. Stopping crawler."
+                        )
+                        self.terminate()
+                        return
+                except Exception as e:
+                    logger.error(f"Error getting the image post date: {e}")
                 try:
                     img_element = zoomable_img_element.find_element(By.TAG_NAME, "img")
                     image_src = img_element.get_attribute("src")
